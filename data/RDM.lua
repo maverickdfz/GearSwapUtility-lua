@@ -57,7 +57,15 @@ function job_pretarget(spell, action, spellMap, eventArgs)
 end
 
 function job_precast(spell, action, spellMap, eventArgs)
-
+    if spell.target.type == 'SELF' then
+        local equipmentSet = get_precast_set(spell, spellMap)
+        local set = 'Self'
+        if equipmentSet[set] then
+            equip(equipmentSet[set])
+            display_breadcrumbs(spell, spellMap, action)
+            eventArgs.handled = true
+        end
+    end
 end
 
 -- Run after the default precast() is done.
@@ -71,7 +79,23 @@ end
 
 -- Set eventArgs.handled to true if we don't want any automatic gear equipping to be done.
 function job_midcast(spell, action, spellMap, eventArgs)
-
+    if spell.target.type == 'SELF' then
+        local equipmentSet = get_midcast_set(spell, spellMap)
+        local set = 'Self'
+        if equipmentSet[set] then
+            equip(equipmentSet[set])
+            display_breadcrumbs(spell, spellMap, action)
+            eventArgs.handled = true
+        end
+    end
+	-- Auto-cancel existing buffs
+	if spell.name=="Stoneskin" and buffactive["Stoneskin"] then
+		windower.send_command('cancel 37;')
+	elseif spell.name=="Sneak" and buffactive["Sneak"] and spell.target.type=="SELF" then
+		windower.send_command('cancel 71;')
+	elseif spell.name=="Utsusemi: Ichi" and buffactive["Copy Image"] then
+		windower.send_command('wait 1;cancel 66;')
+	end
 end
 
 -- Run after the default midcast() is done.
