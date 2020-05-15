@@ -6,14 +6,16 @@ main = "Nirvana",
 ammo = "Sancus Sachet +1",
 head = "Beckoner's Horn +1",
 body = "Shomonjijoe +1",
-ring1 = "Stikini Ring +1"
+ring1 = "Stikini Ring +1",
+legs = "Assid. Pants +1"
 }
 sets.idle.Pet = {
 main = "Nirvana",
 head = "Beckoner's Horn +1",
 body = "Shomonjijoe +1",
 ring1 = "Stikini Ring +1",
-back = "Campestres's Cape"
+back = "Campestres's Cape",
+legs = "Assid. Pants +1"
 }
 sets.idle.Pet.Engaged = {
 ammo = "Sancus Sachet +1",
@@ -21,6 +23,7 @@ neck = "Shulmanu Collar",
 ear1 = "Enmerkar Earring",
 ring1 = "Varar Ring +1",
 ring2 = "Varar Ring +1",
+back = { name = "Campestres's Cape", augments={'Pet: Acc.+20 Pet: R.Acc.+20 Pet: Atk.+20 Pet: R.Atk.+20','Pet: Accuracy+10 Pet: Rng. Acc.+10','Pet: "Regen"+10','Pet: "Regen"+5',}},
 waist = "Klouskap Sash +1"
 }
 sets.precast.JA['Elemental Siphon'] = {
@@ -64,10 +67,10 @@ neck = "Shulmanu Collar",
 ear1 = "Gelos Earring",
 ear2 = "Enmerkar Earring",
 body = "Con. Doublet +3",
-hands = "Merlinic Dastanas",
+hands = { name = "Merlinic Dastanas", augments={'Pet: Accuracy+24 Pet: Rng. Acc.+24','Blood Pact Dmg.+9','Pet: Mag. Acc.+5','Pet: "Mag.Atk.Bns."+8',}},
 ring1 = "Varar Ring +1",
 ring2 = "Varar Ring +1",
-back = "Campestres's Cape",
+back = { name = "Campestres's Cape", augments={'Pet: Acc.+20 Pet: R.Acc.+20 Pet: Atk.+20 Pet: R.Atk.+20','Pet: Accuracy+10 Pet: Rng. Acc.+10','Pet: "Regen"+10','Pet: "Regen"+5',}},
 waist = "Klouskap Sash +1",
 legs = "Apogee Slacks +1",
 feet = "Apogee Pumps +1"
