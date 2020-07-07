@@ -7,6 +7,8 @@ function get_sets()
     local setsUtil = include('SMN-sets')
     sets = setsUtil.apply(sets)
 
+    magicalRagePacts = S{'Inferno','Earthen Fury','Tidal Wave','Aerial Blast','Diamond Dust','Judgment Bolt','Searing Light','Howling Moon','Ruinous Omen','Clarsach Call','Impact','Fire II','Stone II','Water II','Aero II','Blizzard II','Thunder II','Fire IV','Stone IV','Water IV','Aero IV','Blizzard IV','Thunder IV','Thunderspark','Burning Strike','Meteorite','Nether Blast','Flaming Crush','Meteor Strike','Conflag Strike','Heavenly Strike','Wind Blade','Geocrush','Grand Fall','Thunderstorm','Holy Mist','Lunar Bay','Night Terror','Level ? Holy','Tornado II','Sonic Buffet'}
+
     Buff_BPs_Duration = S{'Shining Ruby','Aerial Armor','Frost Armor','Rolling Thunder','Crimson Howl','Lightning Armor','Ecliptic Growl','Glittering Ruby','Earthen Ward','Hastega','Noctoshield','Ecliptic Howl','Dream Shroud','Earthen Armor','Fleet Wind','Inferno Howl','Heavenward Howl','Hastega II','Soothing Current','Crystal Blessing','Katabatic Blades'}
 	Buff_BPs_Healing = S{'Healing Ruby','Healing Ruby II','Whispering Wind','Spring Water'}
 	Buff_BPs_MND = S{"Wind's Blessing"}
@@ -69,6 +71,29 @@ function job_precast(spell, action, spellMap, eventArgs)
             eventArgs.handled = true
         end
     end
+    if spell.type:startswith('BloodPact') and buffactive["Astral Conduit"] then
+        local equipmentSet = get_midcast_set(spell, spellMap)
+        equip(equipmentSet[set])
+        eventArgs.handled = true
+    elseif spell.type == 'BloodPactRage' then
+        if magicalRagePacts:contains(spell.english) then
+            local equipmentSet = get_precast_set(spell, spellMap)
+            local set = 'Magical'
+            if equipmentSet[set] then
+                equip(equipmentSet[set])
+                display_breadcrumbs(spell, spellMap, action)
+                eventArgs.handled = true
+            end
+        else
+            local equipmentSet = get_precast_set(spell, spellMap)
+            local set = 'Physical'
+            if equipmentSet[set] then
+                equip(equipmentSet[set])
+                display_breadcrumbs(spell, spellMap, action)
+                eventArgs.handled = true
+            end
+        end
+    end
 end
 
 function job_midcast(spell, action, spellMap, eventArgs)
@@ -82,6 +107,25 @@ function job_midcast(spell, action, spellMap, eventArgs)
             equip(equipmentSet[set])
             display_breadcrumbs(spell, spellMap, action)
             eventArgs.handled = true
+        end
+    end
+    if spell.type == 'BloodPactRage' then
+        if magicalRagePacts:contains(spell.english) then
+            local equipmentSet = get_midcast_set(spell, spellMap)
+            local set = 'Magical'
+            if equipmentSet[set] then
+                equip(equipmentSet[set])
+                display_breadcrumbs(spell, spellMap, action)
+                eventArgs.handled = true
+            end
+        else
+            local equipmentSet = get_midcast_set(spell, spellMap)
+            local set = 'Physical'
+            if equipmentSet[set] then
+                equip(equipmentSet[set])
+                display_breadcrumbs(spell, spellMap, action)
+                eventArgs.handled = true
+            end
         end
     end
 	-- Auto-cancel existing buffs
