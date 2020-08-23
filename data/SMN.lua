@@ -34,6 +34,8 @@ function job_setup()
     state.Buff['Astral Conduit'] = buffactive['Astral Conduit'] or false
 end
 
+local PrecastMode = 'Normal'
+
 -- Setup vars that are user-dependent.  Can override this function in a sidecar file.
 function user_setup()
     -- Options: Override default values
@@ -44,6 +46,7 @@ function user_setup()
     state.RestingMode:options('Normal')
     state.PhysicalDefenseMode:options('PDT', 'Reraise')
     state.MagicalDefenseMode:options('MDT')
+    --state.PrecastMode:options('Normal', 'Astral Conduit')
     
     -- Additional local binds
     send_command('bind ^= gs c cycle treasuremode')
@@ -58,35 +61,130 @@ end
 function job_pet_status_change(newStatus, oldStatus, eventArgs)
 end
 
+function dump(o)
+    if type(o) == 'table' then
+       local s = '{ '
+       for k,v in pairs(o) do
+          if type(k) ~= 'number' then k = '"'..k..'"' end
+          s = s .. '['..k..'] = ' .. dump(v) .. ',' .. "\n"
+       end
+       return s .. '} '
+    else
+       return tostring(o)
+    end
+ end
+
 function job_precast(spell, action, spellMap, eventArgs)
+    --print(action)
     if (pet.isvalid and pet_midaction()) or spell.type=="Item" then
 		eventArgs.handled = true
     end
-    if spell.target.type == 'SELF' then
-        local equipmentSet = get_precast_set(spell, spellMap)
-        local set = 'Self'
-        if equipmentSet[set] then
-            equip(equipmentSet[set])
-            display_breadcrumbs(spell, spellMap, action)
-            eventArgs.handled = true
-        end
-    end
-    if spell.type:startswith('BloodPact') and buffactive["Astral Conduit"] then
-        local equipmentSet = get_midcast_set(spell, spellMap)
-        equip(equipmentSet[set])
-        eventArgs.handled = true
-    elseif spell.type == 'BloodPactRage' then
-        if magicalRagePacts:contains(spell.english) then
-            local equipmentSet = get_precast_set(spell, spellMap)
-            local set = 'Magical'
-            if equipmentSet[set] then
-                equip(equipmentSet[set])
-                display_breadcrumbs(spell, spellMap, action)
-                eventArgs.handled = true
+    --print(dump(spell))
+    --print(action)
+    --print(spellMap)
+    if spell.type:startswith('BloodPact') then
+        --print('Blood Pact')
+        if buffactive['Astral Conduit'] then
+            print('Astral Conduit')
+            if magicalRagePacts:contains(spell.english) then
+                --print('Blood Pact Rage Magical')
+                if sets.midcast.BloodPactRage.Magical then
+                    if sets.midcast.BloodPactRage.Magical[spell.name] then
+                        equip(sets.midcast.BloodPactRage.Magical[spell.name])
+                        eventArgs.handled = true
+                    elseif sets.midcast.BloodPactRage.Magical[pet.name] then
+                        --print('Blood Pact Rage Magical Pet')
+                        equip(sets.midcast.BloodPactRage.Magical[pet.name])
+                        eventArgs.handled = true
+                    else
+                        --print('Blood Pact Rage Magical Not Pet')
+                        equip(sets.midcast.BloodPactRage.Magical)
+                        eventArgs.handled = true
+                    end
+                end
+            else
+                --print('Blood Pact Rage Physical')
+                if sets.midcast.BloodPactRage.Physical then
+                    if sets.midcast.BloodPactRage.Physical[spell.name] then
+                        --print('Blood Pact Rage Physical Pet')
+                        equip(sets.midcast.BloodPactRage.Physical[spell.name])
+                        eventArgs.handled = true
+                    elseif sets.midcast.BloodPactRage.Physical[pet.name] then
+                        --print('Blood Pact Rage Physical Pet')
+                        equip(sets.midcast.BloodPactRage.Physical[pet.name])
+                        eventArgs.handled = true
+                    else
+                        --print('Blood Pact Rage Physical Not Pet')
+                        equip(sets.midcast.BloodPactRage.Physical)
+                        eventArgs.handled = true
+                    end
+                end
             end
-        else
+            if not eventArgs.handled then
+                --print('Blood Pact Rage')
+                if sets.midcast.BloodPactRage[spell.name] then
+                    equip(sets.midcast.BloodPactRage[spell.name])
+                    eventArgs.handled = true
+                elseif sets.midcast.BloodPactRage[pet.name] then
+                    equip(sets.midcast.BloodPactRage[pet.name])
+                    eventArgs.handled = true
+                else
+                    equip(sets.midcast.BloodPactRage)
+                    eventArgs.handled = true
+                end
+            end
+        elseif spell.type == 'BloodPactRage' then
+            --print('Blood Pact Rage')
+            if magicalRagePacts:contains(spell.english) then
+                --print('Blood Pact Rage Magical')
+                if sets.precast.BloodPactRage.Magical then
+                    if sets.precast.BloodPactRage.Magical[spell.name] then
+                        --print('Blood Pact Rage Magical Pet')
+                        equip(sets.precast.BloodPactRage.Magical[spell.name])
+                        eventArgs.handled = true
+                    elseif sets.precast.BloodPactRage.Magical[pet.name] then
+                        --print('Blood Pact Rage Magical Pet')
+                        equip(sets.precast.BloodPactRage.Magical[pet.name])
+                        eventArgs.handled = true
+                    else
+                        --print('Blood Pact Rage Magical Not Pet')
+                        equip(sets.precast.BloodPactRage.Magical)
+                        eventArgs.handled = true
+                    end
+                end
+            else
+                --print('Blood Pact Rage Physical')
+                if sets.precast.BloodPactRage.Physical then
+                    if sets.precast.BloodPactRage.Physical[spell.name] then
+                        --print('Blood Pact Rage Physical Pet')
+                        equip(sets.precast.BloodPactRage.Physical[spell.name])
+                        eventArgs.handled = true
+                    elseif sets.precast.BloodPactRage.Physical[pet.name] then
+                        --print('Blood Pact Rage Physical Pet')
+                        equip(sets.precast.BloodPactRage.Physical[pet.name])
+                        eventArgs.handled = true
+                    else
+                        --print('Blood Pact Rage Physical Not Pet')
+                        equip(sets.precast.BloodPactRage.Physical)
+                        eventArgs.handled = true
+                    end
+                end
+            end
+            if not eventArgs.handled then
+                --print('Blood Pact Rage')
+                if sets.midcast.BloodPactRage[spell.name] then
+                    equip(sets.midcast.BloodPactRage[spell.name])
+                    eventArgs.handled = true
+                elseif sets.midcast.BloodPactRage[pet.name] then
+                    equip(sets.midcast.BloodPactRage[pet.name])
+                    eventArgs.handled = true
+                end
+            end
+        end
+    else
+        if spell.target.type == 'SELF' then
             local equipmentSet = get_precast_set(spell, spellMap)
-            local set = 'Physical'
+            local set = 'Self'
             if equipmentSet[set] then
                 equip(equipmentSet[set])
                 display_breadcrumbs(spell, spellMap, action)
@@ -107,25 +205,6 @@ function job_midcast(spell, action, spellMap, eventArgs)
             equip(equipmentSet[set])
             display_breadcrumbs(spell, spellMap, action)
             eventArgs.handled = true
-        end
-    end
-    if spell.type == 'BloodPactRage' then
-        if magicalRagePacts:contains(spell.english) then
-            local equipmentSet = get_midcast_set(spell, spellMap)
-            local set = 'Magical'
-            if equipmentSet[set] then
-                equip(equipmentSet[set])
-                display_breadcrumbs(spell, spellMap, action)
-                eventArgs.handled = true
-            end
-        else
-            local equipmentSet = get_midcast_set(spell, spellMap)
-            local set = 'Physical'
-            if equipmentSet[set] then
-                equip(equipmentSet[set])
-                display_breadcrumbs(spell, spellMap, action)
-                eventArgs.handled = true
-            end
         end
     end
 	-- Auto-cancel existing buffs
@@ -154,6 +233,44 @@ function job_buff_change(buff, gain)
 end
 
 function job_pet_midcast(spell, action, spellMap, eventArgs)
+    if spell.type == 'BloodPactRage' then
+        if magicalRagePacts:contains(spell.english) then
+            if sets.midcast.BloodPactRage.Magical then
+                if sets.midcast.BloodPactRage.Magical[spell.name] then
+                    equip(sets.midcast.BloodPactRage.Magical[spell.name])
+                    eventArgs.handled = true
+                elseif sets.midcast.BloodPactRage.Magical[pet.name] then
+                    equip(sets.midcast.BloodPactRage.Magical[pet.name])
+                    eventArgs.handled = true
+                else
+                    equip(sets.midcast.BloodPactRage.Magical)
+                    eventArgs.handled = true
+                end
+            end
+        else
+            if sets.midcast.BloodPactRage.Physical then
+                if sets.midcast.BloodPactRage.Physical[spell.name] then
+                    equip(sets.midcast.BloodPactRage.Physical[spell.name])
+                    eventArgs.handled = true
+                elseif sets.midcast.BloodPactRage.Physical[pet.name] then
+                    equip(sets.midcast.BloodPactRage.Physical[pet.name])
+                    eventArgs.handled = true
+                else
+                    equip(sets.midcast.BloodPactRage.Physical)
+                    eventArgs.handled = true
+                end
+            end
+        end
+        if not eventArgs.handled then
+            if sets.midcast.BloodPactRage[spell.name] then
+                equip(sets.midcast.BloodPactRage[spell.name])
+                eventArgs.handled = true
+            elseif sets.midcast.BloodPactRage[pet.name] then
+                equip(sets.midcast.BloodPactRage[pet.name])
+                eventArgs.handled = true
+            end
+        end
+    end
 end
 
 function job_pet_aftercast(spell, action, spellMap, eventArgs)

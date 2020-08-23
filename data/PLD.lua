@@ -5,7 +5,7 @@ function get_sets()
 	include('Mote-Include.lua')
     include('organizer-lib')
     
-    local setsUtil = include('THF-sets')
+    local setsUtil = include('PLD-sets')
     sets = setsUtil.apply(sets)
 end
 
@@ -17,19 +17,20 @@ function job_setup()
     include('Mote-TreasureHunter')
     state.TreasureMode:set('None')
 
-    state.Buff.Feint = buffactive.feint or false
-    state.Buff.Conspirator = buffactive.conspirator or false
-    state.Buff['Perfect Dodge'] = buffactive['Perfect Dodge'] or false
-    state.Buff['Assassin\'s Charge'] = buffactive['Assassin\'s Charge'] or false
+    state.Buff.Composure = buffactive.composure or false
+    state.Buff.Temper = buffactive.temper or false
+    
+    update_buffs()
 end
 
 -- Setup vars that are user-dependent.  Can override this function in a sidecar file.
 function user_setup()
     -- Options: Override default values
-    state.OffenseMode:options('Normal', 'Mid', 'Acc')
-    state.HybridMode:options('Normal', 'DT', 'PDT')
+    state.OffenseMode:options('Normal', 'Mid', 'Acc', 'Enmity')
+    state.CastingMode:options('Normal', 'Resistant', 'Burst', 'Enfeebling')
+    state.HybridMode:options('Normal', 'PDT', 'Enmity')
     state.WeaponskillMode:options('Normal', 'Mid', 'Acc')
-    state.IdleMode:options('Normal', 'DT', 'Sphere')
+    state.IdleMode:options('Normal', 'DT', 'Sphere', 'Enmity')
     state.RestingMode:options('Normal')
     state.PhysicalDefenseMode:options('PDT', 'Reraise')
     state.MagicalDefenseMode:options('MDT')
@@ -41,12 +42,20 @@ function user_setup()
     send_command('bind != gs c toggle CapacityMode')
 end
 
-
 -- Called when this job file is unloaded (eg: job change)
 function file_unload()
     send_command('unbind ^[')
     send_command('unbind !=')
     send_command('unbind ![')
+end
+
+function update_buffs()
+    state.Buff['Divine Emblem'] = buffactive['Divine Emblem'] or false
+    state.Buff['Holy Circle'] = buffactive['Holy Circle'] or false
+    
+    state.Buff['Invincible'] = buffactive['Invincible'] or false
+    state.Buff['Sentinel'] = buffactive['Sentinel'] or false
+    state.Buff['Cover'] = buffactive['Cover'] or false
 end
 
 -- Set eventArgs.handled to true if we don't want any automatic target handling to be done.
@@ -58,6 +67,15 @@ end
 
 function job_precast(spell, action, spellMap, eventArgs)
 
+    if spell.target.type == 'SELF' then
+        local equipmentSet = get_precast_set(spell, spellMap)
+        local set = 'Self'
+        if equipmentSet[set] then
+            equip(equipmentSet[set])
+            display_breadcrumbs(spell, spellMap, action)
+            eventArgs.handled = true
+        end
+    end
 end
 
 -- Run after the default precast() is done.
@@ -67,25 +85,33 @@ function job_post_precast(spell, action, spellMap, eventArgs)
             -- If sneak is active when using, cancel before completion
             send_command('cancel 71')
     end
-
-    if spell.english == 'Aeolian Edge' and state.TreasureMode.value ~= 'None' then
-        equip(sets.TreasureHunter)
-    elseif spell.english=='Sneak Attack' or spell.english=='Trick Attack' or spell.type == 'WeaponSkill' then
-        if state.TreasureMode.value == 'SATA' or state.TreasureMode.value == 'Fulltime' then
-            equip(sets.TreasureHunter)
-        end
-    end
 end
 
 -- Set eventArgs.handled to true if we don't want any automatic gear equipping to be done.
 function job_midcast(spell, action, spellMap, eventArgs)
 
+    if spell.target.type == 'SELF' then
+        local equipmentSet = get_midcast_set(spell, spellMap)
+        local set = 'Self'
+        if equipmentSet[set] then
+            equip(equipmentSet[set])
+            display_breadcrumbs(spell, spellMap, action)
+            eventArgs.handled = true
+        end
+    end
+	-- Auto-cancel existing buffs
+	if spell.name=="Stoneskin" and buffactive["Stoneskin"] then
+		windower.send_command('cancel 37;')
+	elseif spell.name=="Sneak" and buffactive["Sneak"] and spell.target.type=="SELF" then
+		windower.send_command('cancel 71;')
+	elseif spell.name=="Utsusemi: Ichi" and buffactive["Copy Image"] then
+		windower.send_command('wait 1;cancel 66;')
+	end
 end
 
 -- Run after the default midcast() is done.
 -- eventArgs is the same one used in job_midcast, in case information needs to be persisted.
 function job_post_midcast(spell, action, spellMap, eventArgs)
-
 end
 
 -- Set eventArgs.handled to true if we don't want any automatic gear equipping to be done.
@@ -119,26 +145,7 @@ function job_buff_change(buff, gain)
     end
 end
 
--- Set eventArgs.handled to true if we don't want the automatic display to be run.
-function display_current_job_state(eventArgs)
-
-end
-
--- State buff checks that will equip buff gear and mark the event as handled.
-function check_buff(buff_name, eventArgs)
-    if state.Buff[buff_name] then
-        equip(sets.buff[buff_name] or {})
-        if state.TreasureMode.value == 'SATA' or state.TreasureMode.value == 'Fulltime' then
-            equip(sets.TreasureHunter or {})
-        end
-        eventArgs.handled = true
-    end
-end
-
-function customize_melee_set(meleeSet)
-    if state.TreasureMode.value == 'Fulltime' then
-        meleeSet = set_combine(meleeSet, sets.TreasureHunter)
-    end
-
-    return meleeSet
+-- Called by the 'update' self-command.
+function job_update(cmdParams, eventArgs)
+    update_buffs()
 end
