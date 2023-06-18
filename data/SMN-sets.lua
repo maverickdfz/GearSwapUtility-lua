@@ -192,6 +192,33 @@ waist = "Incarnation Sash",
 legs = "Apogee Slacks +1",
 feet = "Apogee Pumps +1"
 }
+sets.aftercast = {
+ammo = "Sancus Sachet +1",
+head = "Beckoner's Horn +1",
+neck = "Loricate Torque +1",
+ear1 = "C. Palug Earring",
+body = "Apo. Dalmatica +1",
+ring1 = "Stikini Ring +1",
+ring2 = "Defending Ring",
+back = "Campestres's Cape",
+waist = "Regal Belt",
+legs = "Assid. Pants +1",
+feet = "Crier's Gaiters"
+}
+sets.aftercast.ForceIlvl = {
+feet = "Convo. Pigaches +3"
+}
+sets.aftercast.Avatar = {
+head = "Beckoner's Horn +1",
+neck = "Caller's Pendant",
+ear1 = "C. Palug Earring",
+body = "Apo. Dalmatica +1",
+ring1 = "Stikini Ring +1",
+ring2 = "Evoker's Ring",
+back = "Campestres's Cape",
+waist = "Lucidity Sash",
+legs = "Assid. Pants +1"
+}
 return sets
 end
 
